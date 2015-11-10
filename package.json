@@ -1,0 +1,20 @@
+{
+  "name": "nomic",
+  "version": "1.0.0",
+  "description": "nomic game webserver",
+  "main": "server.js",
+  "dependencies": {
+    "isotope": "^0.5.2",
+    "node-uuid": "^1.4.3",
+    "atob": "^1.1.2",
+    "btoa": "^1.1.2",
+    "redis": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "GPL-2.0"
+}
