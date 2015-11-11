@@ -13,6 +13,10 @@ body {
     border-right: 1px dotted #000;
 }
 
+#game {
+    margin-left: 262px;
+}
+
 #greeter {
     border-bottom: 1px dotted #555;
     position: relative;
