@@ -224,3 +224,62 @@ app.post("game/create", function(res, req) {
         });
     });
 });
+
+app.post("game/propose/_var", function(res, req, game) {
+    app.auth(res, req, function(user) {
+        client.hget(game, 'owner', function(err, owner) {
+            if (user === owner) {
+                app.extract_data(req, function(data) {
+                    client.hset(game, 'rule', data, NOPE);
+                    client.hget(game, 'votes', function(err, votesUUID) {
+                        deleteH(votesUUID);
+                    });
+                    res.writeHead(200, {"Content-Type":"text/plain"});
+                    res.end();
+                });
+            } else {
+                unauthorized(res);
+            }
+        });
+    });
+});
+
+app.post("game/vote/_var", function(res, req, game) {
+    app.auth(res, req, function(user) {
+        client.hget(game, 'users', function(err, usersUUID) {
+            client.sismember(usersUUID, user, function(err, is) {
+                if (is === 1) {
+                    client.hget(game, 'votes', function(err, votesUUID) {
+                        app.extract_data(req, function(data) {
+                            client.hset(votesUUID, user, data.vote, NONE);
+                        });
+                    });
+                } else {
+                    res.writeHead(401, {"Content-Type":"text/plain"});
+                    res.end();
+                }
+            });
+        });
+    });
+});
+
+app.get("game/votestatus/_var", function(res, req, game) {
+    client.hget(game, 'users', function(err, usersUUID) {
+        client.hget(game, 'votes', function(err, votesUUID) {
+            client.scard(usersUUID, function(err, usersCount) {
+                client.hlen(votesUUID, function(err, votesCount) {
+                    if (usersCount === votesCount) {
+                        res.writeHead(405, {"Content-Type":"text/plain"});
+                        res.end("in progress");
+                    } else {
+                        client.hgetall(votesUUID, function(err, votes) {
+                            console.log(votes);
+                            res.writeHead(200, {"Content-Type":"text/plain"});
+                            res.end(votes);
+                        });
+                    }
+                });
+            });
+        });
+    });
+});
