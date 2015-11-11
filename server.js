@@ -153,9 +153,29 @@ app.template = function(res, file, context) {
 
 app.get("nomic", function(res, req) {
     app.auth(res, req, function(user) {
-        app.template(res, "content/views/nomic.html", {
-            "name" : user,
-            "ongoing" : ['game1', 'game2', 'game3']
+        client.smembers(user+"-games", function(err, members) {
+            if (members===null) {
+                members=[];
+            }
+            app.template(res, "content/views/nomic.html", {
+                "name" : user,
+                "ongoing" : members
+            });
+        });
+    });
+});
+
+app.post("game/subscribe", function(res, req) {
+    app.auth(res, req, function(user) {
+        app.extract_data(req, function(data) {
+            client.sadd(user+"-games", data.subscribeid, function(err, added) {
+                if (added > 0) {
+                    res.writeHead(200, {"Content-Type":"text/plain"});
+                    res.end(data.subscribeid);
+                } else {
+                    res.writeHead(413, {"Content-Type":"text/plain"});
+                }
+            });
         });
     });
 });

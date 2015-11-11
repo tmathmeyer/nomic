@@ -1,5 +1,7 @@
 <html>
     <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="/static/js/game.js"></script>
         <link rel="stylesheet" href="/static/css/nomic.css">
         <title>Nomic</title>
     </head>
@@ -9,13 +11,19 @@
                 {{name}}
             </div>
             {{ongoing}}
-            <div class="btn-game">
+            <div class="btn-game btn">
                 {{.}}
             </div>
             {{/ongoing}}
-            <div id="newgame" class="btn-game">
+            <div id="join" class="btn-game">
+                <input class="side-search" id="joingame" type="text">
+                <div class="side-search-button btn" onclick="subscribe()">
+                    &#10004;
+                </div>
+            </div>
+            <div id="create" class="btn-game">
                 <input class="side-search" id="newgame" type="text">
-                <div class="side-search-button">
+                <div class="side-search-button btn" onclick="create()">
                     +
                 </div>
             </div>
