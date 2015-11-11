@@ -3,6 +3,8 @@ var redis = require("redis");
 var btoa = require('btoa');
 var atob = require('atob');
 var uuid = require('node-uuid');
+var Mark = require("markup-js");
+var fs = require("fs");
 
 var client = redis.createClient();
 
@@ -114,7 +116,7 @@ app.post("auth/log", function(res, req) {
     });
 });
 
-app.get("nomic", function(res, req) {
+app.auth = function(res, req, cb) {
     var authcookie = app.cookies(req);
     authcookie = authcookie['auth'];
 
@@ -127,8 +129,7 @@ app.get("nomic", function(res, req) {
                 client.hget("cookies", obj.user, function(e, cookie) {
                     var currentTime = (new Date).getTime();
                     if (cookie === obj.cookie && obj.time > currentTime) {
-                        res.writeHead(200, {"Content-Type":"text/html"});
-                        res.end("YES");
+                        cb(obj.user);
                     } else {
                         unauthorized(res);
                     }
@@ -140,4 +141,21 @@ app.get("nomic", function(res, req) {
     } else {
         unauthorized(res);
     }
+}
+
+app.template = function(res, file, context) {
+    fs.readFile(process.cwd() + "/" + file, "utf8", function (err, template) {
+        result = Mark.up(template, context);
+        res.writeHead(200, {"Content-Type": "text/html"});
+        res.end(result);
+    });
+}
+
+app.get("nomic", function(res, req) {
+    app.auth(res, req, function(user) {
+        app.template(res, "content/views/nomic.html", {
+            "name" : user,
+            "ongoing" : ['game1', 'game2', 'game3']
+        });
+    });
 });

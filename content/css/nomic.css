@@ -1,0 +1,53 @@
+body {
+    background-color: #D9DEBA;
+}
+
+#sidebar {
+    background-color: #EFF5CE;
+    text-align: center;
+    position: fixed;
+    left: 0;
+    height: 100%;
+    top: 0;
+    width: 262px;
+    border-right: 1px dotted #000;
+}
+
+#greeter {
+    border-bottom: 1px dotted #555;
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 91px;
+    line-height: 91px;
+}
+
+.btn-game {
+    border-bottom: 1px dotted #555;
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+}
+
+.btn-game:hover {
+    background-color: #CCF5C9;
+}
+
+.side-search {
+    width: calc(100% - 40px);
+    height: 100%;
+    line-height: 100%;
+    float: left;
+}
+
+.side-search-button {
+    width: 40px;
+    height: 100%;
+    float: right;
+    line-height: 40px;
+    text-align: center;
+}

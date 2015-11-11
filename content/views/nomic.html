@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="/static/css/nomic.css">
+        <title>Nomic</title>
+    </head>
+    <body>
+        <div id="sidebar">
+            <div id="greeter">
+                {{name}}
+            </div>
+            {{ongoing}}
+            <div class="btn-game">
+                {{.}}
+            </div>
+            {{/ongoing}}
+            <div id="newgame" class="btn-game">
+                <input class="side-search" id="newgame" type="text">
+                <div class="side-search-button">
+                    +
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
