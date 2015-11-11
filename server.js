@@ -20,8 +20,8 @@ deleteH = function(map) {
     });
 }
 
-deleteH("auth");
-deleteH("cookies");
+//deleteH("auth");
+//deleteH("cookies");
 
 
 
@@ -154,9 +154,7 @@ app.template = function(res, file, context) {
 app.get("nomic", function(res, req) {
     app.auth(res, req, function(user) {
         client.smembers(user+"-games", function(err, members) {
-            if (members===null) {
-                members=[];
-            }
+            if (members===null) members=[];
             app.template(res, "content/views/nomic.html", {
                 "name" : user,
                 "ongoing" : members
@@ -165,10 +163,38 @@ app.get("nomic", function(res, req) {
     });
 });
 
-NOPE = function(a, b){
-    //console.log(a);
-    //console.log(b);
-};
+app.get("nomic/_var", function(res, req, game) {
+    app.auth(res, req, function(user) {
+        client.smembers(user+"-games", function(err, members) {
+            if (members===null) members=[];
+            client.hget(game, 'owner', function(err, owner) {
+                client.hget(game, 'votes', function(err, votesUUID) {
+                    client.hexists(votesUUID, user, function(err, exists) {
+                        client.hget(game, 'rule', function(err, rule) {
+                            if (owner === null) {
+                                res.writeHead(404, {"Content-Type":"text/plain"});
+                                res.end();
+                            } else {
+                                app.template(res, "content/views/nomic.html", {
+                                    "name" : user,
+                                    "ongoing" : members,
+                                    "data": true,
+                                    "isOP": user===owner,
+                                    "hasNotVoted": exists===0,
+                                    "ruleBody": rule,
+                                    "ruleTitle": 'generic title for a rule',
+                                    "game": game
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
+
+NOPE = function(a, b){};
 
 app.post("game/subscribe", function(res, req) {
     app.auth(res, req, function(user) {
@@ -179,11 +205,11 @@ app.post("game/subscribe", function(res, req) {
                     res.writeHead(404, {"Content-Type":"text/plain"});
                     res.end();
                 } else {
-                    client.hget("game-"+data, "users", function(err, usersUUID) {
+                    client.hget(data, "users", function(err, usersUUID) {
                         client.sismember(usersUUID, user, function(err, is) {
                             if (is === 1) {
                                 res.writeHead(420, {"Content-Type":"text/plain"});
-                                res.end("chill, bro");
+                                res.end(user+"... chill, bro");
                             } else {
                                 client.sadd(usersUUID, user, NOPE);
                                 client.sadd(user+"-games", data, NOPE);
@@ -217,6 +243,7 @@ app.post("game/create", function(res, req) {
                     client.hset(data, 'users', users, NOPE);
 
                     client.sadd(users, user, NOPE);
+                    client.sadd(user+"-games", data, NOPE);
                     res.writeHead(200, {"Content-Type":"text/plain"});
                     res.end(data);
                 }
@@ -230,7 +257,7 @@ app.post("game/propose/_var", function(res, req, game) {
         client.hget(game, 'owner', function(err, owner) {
             if (user === owner) {
                 app.extract_data(req, function(data) {
-                    client.hset(game, 'rule', data, NOPE);
+                    client.hset(game, 'rule', data.content, NOPE);
                     client.hget(game, 'votes', function(err, votesUUID) {
                         deleteH(votesUUID);
                     });
@@ -251,7 +278,9 @@ app.post("game/vote/_var", function(res, req, game) {
                 if (is === 1) {
                     client.hget(game, 'votes', function(err, votesUUID) {
                         app.extract_data(req, function(data) {
-                            client.hset(votesUUID, user, data.vote, NONE);
+                            client.hset(votesUUID, user, data.vote, NOPE);
+                            res.writeHead(200, {"Content-Type":"text/plain"});
+                            res.end("vote accepted");
                         });
                     });
                 } else {
@@ -268,18 +297,46 @@ app.get("game/votestatus/_var", function(res, req, game) {
         client.hget(game, 'votes', function(err, votesUUID) {
             client.scard(usersUUID, function(err, usersCount) {
                 client.hlen(votesUUID, function(err, votesCount) {
-                    if (usersCount === votesCount) {
+                    if (usersCount !== votesCount) {
                         res.writeHead(405, {"Content-Type":"text/plain"});
                         res.end("in progress");
                     } else {
                         client.hgetall(votesUUID, function(err, votes) {
-                            console.log(votes);
                             res.writeHead(200, {"Content-Type":"text/plain"});
-                            res.end(votes);
+                            res.end(JSON.stringify(votes));
                         });
                     }
                 });
             });
+        });
+    });
+});
+
+app.post("game/vote/_var/forceabstain", function(res, req, game) {
+    app.auth(res, req, function(user) {
+        client.hget(game, 'owner', function(err, owner) {
+            if (user === owner) {
+                client.hget(game, 'users', function(err, usersUUID) {
+                    client.smembers(usersUUID, function(err, users) {
+                        client.hget(game, 'votes', function(err, votesUUID) {
+                            var countdown = users.length;
+                            users.forEach(function(each) {
+                                client.hexists(votesUUID, each, function(err, exists) {
+                                    if (exists === 0) {
+                                        client.hset(votesUUID, each, 'abstain', NOPE);
+                                    }
+                                    if (--countdown == 0) {
+                                        res.writeHead(200, {"Content-Type":"text/plain"});
+                                        res.end();
+                                    }
+                                });
+                            });
+                        });
+                    });
+                });
+            } else {
+                unauthorized(res);
+            }
         });
     });
 });
