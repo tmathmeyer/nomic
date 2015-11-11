@@ -40,7 +40,7 @@ app.cookies = function parseCookies (request) {
 
 authcookie = function(resp, expiry, usercookie) {
     var currentTime = (new Date).getTime();
-    usercookie.time = currentTime+(expiry*1000*60);
+    usercookie.time = currentTime+(expiry*1000*60*60);
     var cookie = btoa(JSON.stringify(usercookie));
     resp.writeHead(200, {
         "Content-Type": "text/plain",
@@ -165,15 +165,60 @@ app.get("nomic", function(res, req) {
     });
 });
 
+NOPE = function(a, b){
+    //console.log(a);
+    //console.log(b);
+};
+
 app.post("game/subscribe", function(res, req) {
     app.auth(res, req, function(user) {
         app.extract_data(req, function(data) {
-            client.sadd(user+"-games", data.subscribeid, function(err, added) {
-                if (added > 0) {
-                    res.writeHead(200, {"Content-Type":"text/plain"});
-                    res.end(data.subscribeid);
+            data = data.subscribeid;
+            client.hget(data, 'owner', function(e, owner) {
+                if (owner === null) {
+                    res.writeHead(404, {"Content-Type":"text/plain"});
+                    res.end();
                 } else {
-                    res.writeHead(413, {"Content-Type":"text/plain"});
+                    client.hget("game-"+data, "users", function(err, usersUUID) {
+                        client.sismember(usersUUID, user, function(err, is) {
+                            if (is === 1) {
+                                res.writeHead(420, {"Content-Type":"text/plain"});
+                                res.end("chill, bro");
+                            } else {
+                                client.sadd(usersUUID, user, NOPE);
+                                client.sadd(user+"-games", data, NOPE);
+                                res.writeHead(200, {"Content-Type":"text/plain"});
+                                res.end(data);
+                            }
+                        });
+                    });
+                }
+            });
+        });
+    });
+});
+
+
+
+app.post("game/create", function(res, req) {
+    app.auth(res, req, function(user) {
+        app.extract_data(req, function(data) {
+            data = data.subscribeid;
+            client.hexists(data, 'owner', function(e, owner) {
+                if (owner !== 0) {
+                    res.writeHead(409, {"Content-Type":"text/plain"});
+                    res.end();
+                } else {
+                    var votes = uuid.v4();
+                    var users = uuid.v4();
+                    client.hset(data, 'owner', user , NOPE);
+                    client.hset(data, 'rule' , ''   , NOPE);
+                    client.hset(data, 'votes', votes, NOPE);
+                    client.hset(data, 'users', users, NOPE);
+
+                    client.sadd(users, user, NOPE);
+                    res.writeHead(200, {"Content-Type":"text/plain"});
+                    res.end(data);
                 }
             });
         });
