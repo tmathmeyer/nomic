@@ -28,6 +28,47 @@
                 </div>
             </div>
         </div>
+
+        <div id="game">
+            <h3>Current rule to vote on</h3>
+            <p>
+            {{rule}}
+            </p>
+            {{if uservoted}}
+            <p>
+            You have already voted on this rule.
+            </p>
+            {{else}}
+            <p>
+            TODO buttons
+            </p>
+            {{/if}}
+
+            {{if allvoted}}
+            <p>
+            <table>
+                <tbody>
+                    <tr>
+                        <th>User</th>
+                        <th>Vote</th>
+                    </tr>
+
+            {{voteresults}}
+                    <tr>
+                        <td>{{user}}</td>
+                        <td>{{vote}}</td>
+                    </tr>
+            {{/voteresults}}
+                </tbody>
+            </table>
+            </p>
+            {{else}}
+            <p>
+            Still waiting for users to vote.
+            </p>
+            {{/if}}
+
+        </div>
     </body>
 </html>
 
