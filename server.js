@@ -1,4 +1,4 @@
-var app = require("isotope").create(8080);
+var app = require("isotope").create(7088);
 var redis = require("redis");
 var btoa = require('btoa');
 var atob = require('atob');
@@ -302,8 +302,11 @@ app.get("game/votestatus/_var", function(res, req, game) {
                         res.end("in progress");
                     } else {
                         client.hgetall(votesUUID, function(err, votes) {
-                            res.writeHead(200, {"Content-Type":"text/plain"});
-                            res.end(JSON.stringify(votes));
+                            app.template(res, "content/views/results.html", {
+                                "votes": Object.keys(votes).map(function(each) {
+                                    return {"name":each, "vote":votes[each]};
+                                })
+                            });
                         });
                     }
                 });

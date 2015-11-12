@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <style>
+            .abstain {
+                background-color: #aaa;
+            }
+            .nay {
+                background-color: #f00;
+            }
+            .yea {
+                background-color: #0f0;
+            }
+        </style>
+    </head>
+    <body>
+        <ul>
+            {{votes}}
+            <li class="vote {{vote}}">
+                {{name}} --- {{vote}}
+            </li>
+            {{/votes}}
+        </ul>
+    </body>
+</html>
