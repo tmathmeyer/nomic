@@ -1,21 +1,11 @@
-String.prototype.hashCode = function() {
-    var hash = 0, i, chr, len;
-    if (this.length == 0) return hash;
-    for (i = 0, len = this.length; i < len; i++) {
-        chr   = this.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-};
-
 auth = function(url, cb) {
     var pass = $("#password").val();
     var user = $("#username").val();
-        pass = (pass.hashCode() ^ user.hashCode()) + "" + (user+pass).hashCode();
-    pass = pass.hashCode() + pass;
-    pass = window.btoa(unescape(encodeURIComponent(pass)));
-
+    if (/\s/.test(user)) {
+        alert("no spaces in username!");
+        return;
+    }
+    pass = hex_sha512(pass);
     var postData = {"user":user,"pass":pass};
     $.post(url, postData, cb).fail(cb);
 }

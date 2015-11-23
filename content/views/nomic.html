@@ -11,9 +11,11 @@
                 {{name}}
             </div>
             {{ongoing}}
-            <div class="btn-game btn">
-                <a href="/nomic/{{.}}">{{.}}</a>
-            </div>
+            <a href="/nomic/{{.}}">
+                <div class="btn-game btn">
+                    {{.}}
+                </div>
+            </a>
             {{/ongoing}}
             <div id="join" class="btn-game">
                 <input class="side-search" id="joingame" type="text">
@@ -34,36 +36,38 @@
             {{if isOP}}
             <div id="propose">
                 <textarea rows="4" cols="50" id="submissionText"></textarea>
-                <div id="proposeSubmit" onclick="submitContent('{{game}}')">
+                <div class="ibtn" id="proposeSubmit" onclick="submitContent('{{game}}')">
                     Submit
                 </div>
-                <div id="forceAbstain" onclick="forceAbstain('{{game}}')">
+                <div class="ibtn" id="forceAbstain" onclick="forceAbstain('{{game}}')">
                     ForceAbstain
                 </div>
             </div>
             {{/if}}
 
-
-            {{if hasNotVoted}}
-            <div id="currentRule">
-                <div id="displayRule">
-                    <h3> {{ruleTitle}} </h3>
-                    <p> {{ruleBody}} </p>
-                </div>
-                <div id="votingButtons">
-                    <div id="voteNay" onclick="vote('{{game}}', 'nay')">
-                        Nay
+            <div id="displayRule">
+                <p> {{ruleBody}} </p>
+                <hr />
+                <div id="currentRule">
+                    {{if hasNotVoted}}
+                    <div id="votingButtons">
+                        <div class="ibtn" id="voteNay" onclick="vote('{{game}}', 'nay')">
+                            Nay
+                        </div>
+                        <div class="ibtn" id="voteYea" onclick="vote('{{game}}', 'yea')">
+                            Yea
+                        </div>
                     </div>
-                    <div id="voteYea" onclick="vote('{{game}}', 'yea')">
-                        Yea
-                    </div>
+                    {{else}}
+                    You voted
+                    {{/if}}
                 </div>
             </div>
-            {{/if}}
+
 
 
             <div id="voteResults">
-                <iframe src="/game/votestatus/{{game}}" width="400" height="700"></iframe>
+                <iframe src="/game/votestatus/{{game}}" frameborder="0" width="100%" height="700"></iframe>
             </div>
 
 

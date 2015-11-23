@@ -2,6 +2,60 @@ body {
     background-color: #D9DEBA;
 }
 
+.ibtn {
+    background-color: #ccffcc;
+    border: 1px dotted;
+    width: auto;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.ibtn:hover {
+    background-color:#aaddaa;
+}
+
+#displayRule {
+    background-color: #EFF5CE;
+    border: 1px dotted;
+    margin: 10px;
+    padding: 10px;
+    padding-bottom: 55px;
+}
+
+#voteResults {
+    background-color: #EFF5CE;
+    border: 1px dotted;
+    margin: 10px;
+    padding: 10px;
+}
+
+#submissionText {
+    max-width: 100%;
+    width: 100%;
+    height: 180px;
+    margin-bottom: 60px;
+}
+
+#proposeSubmit {
+    margin-top: -45px;
+    float: left;
+}
+
+#forceAbstain {
+    margin-top: -45px;
+    float: right;
+}
+
+#voteNay {
+    top: 10px;
+    float: left;
+}
+
+#voteYea {
+    top: 10px;
+    float: right;
+}
+
 #sidebar {
     background-color: #EFF5CE;
     text-align: center;
@@ -14,7 +68,15 @@ body {
 }
 
 #game {
+    width: 600px;
     margin-left: 262px;
+}
+
+#propose {
+    background-color: #EFF5CE;
+    border: 1px dotted;
+    margin: 10px;
+    padding: 10px;
 }
 
 #greeter {

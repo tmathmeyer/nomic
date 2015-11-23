@@ -6,6 +6,8 @@ var uuid = require('node-uuid');
 var Mark = require("markup-js");
 var fs = require("fs");
 
+var esc = require('escape-html');
+
 var client = redis.createClient();
 
 client.on("error", function (err) {
@@ -78,16 +80,21 @@ app.post("auth/reg", function(res, req) {
     app.extract_data(req, function(data){
         client.hexists("auth", data.user, function(e, exists) {
             if (exists===0) {
-                client.hset("auth", data.user, data.pass, function(e, s) {
-                    if (s === 1) {
-                        gencookie(data.user, function(d) {
-                            authcookie(res, 3, d);
-                        });
-                    } else {
-                        res.writeHead(500, {"Content-Type": "text/plain"});
-                        res.end("could not register");
-                    }
-                });
+                if(!(/[^a-zA-Z0-9]/.test(client.user)) || client.user.length < 20) {
+                    client.hset("auth", data.user, data.pass, function(e, s) {
+                        if (s === 1) {
+                            gencookie(data.user, function(d) {
+                                authcookie(res, 3, d);
+                            });
+                        } else {
+                            res.writeHead(500, {"Content-Type": "text/plain"});
+                            res.end("could not register");
+                        }
+                    });
+                } else {
+                    res.writeHead(420, {"Content-Type": "text/plain"});
+                    res.end("bad username bro");
+                }
             } else {
                 res.writeHead(409, {"Content-Type": "text/plain"});
                 res.end("user already exists");
@@ -224,8 +231,6 @@ app.post("game/subscribe", function(res, req) {
     });
 });
 
-
-
 app.post("game/create", function(res, req) {
     app.auth(res, req, function(user) {
         app.extract_data(req, function(data) {
@@ -257,7 +262,8 @@ app.post("game/propose/_var", function(res, req, game) {
         client.hget(game, 'owner', function(err, owner) {
             if (user === owner) {
                 app.extract_data(req, function(data) {
-                    client.hset(game, 'rule', data.content, NOPE);
+                    data = esc(data.content);
+                    client.hset(game, 'rule', data, NOPE);
                     client.hget(game, 'votes', function(err, votesUUID) {
                         deleteH(votesUUID);
                     });
@@ -278,9 +284,14 @@ app.post("game/vote/_var", function(res, req, game) {
                 if (is === 1) {
                     client.hget(game, 'votes', function(err, votesUUID) {
                         app.extract_data(req, function(data) {
-                            client.hset(votesUUID, user, data.vote, NOPE);
-                            res.writeHead(200, {"Content-Type":"text/plain"});
-                            res.end("vote accepted");
+                            if (data.vote === 'yea' || data.vote === 'nay' || data.vote === 'abstain') {
+                                client.hset(votesUUID, user, data.vote, NOPE);
+                                res.writeHead(200, {"Content-Type":"text/plain"});
+                                res.end("vote accepted");
+                            } else {
+                                res.writeHead(420, {"Content-Type":"text/plain"});
+                                res.end("fuck you for voting "+data);
+                            }
                         });
                     });
                 } else {
@@ -303,7 +314,7 @@ app.get("game/votestatus/_var", function(res, req, game) {
                     } else {
                         client.hgetall(votesUUID, function(err, votes) {
                             app.template(res, "content/views/results.html", {
-                                "votes": Object.keys(votes).map(function(each) {
+                                "votes": votes===null?[]:Object.keys(votes).map(function(each) {
                                     return {"name":each, "vote":votes[each]};
                                 })
                             });
